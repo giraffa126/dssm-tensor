@@ -20,8 +20,7 @@ def rank_loss(left, right):
 class DSSMNet(object):
     """ sim net
     """
-    def __init__(self, vocab_size=None, embedding_size=128, hidden_size=256, eps=0.2):
-        self.eps = eps
+    def __init__(self, vocab_size=None, embedding_size=128, hidden_size=256):
         # inputs
         self.query_in = tf.placeholder(tf.int32, [None, None], name="query")
         self.pos_in = tf.placeholder(tf.int32, [None, None], name="pos")
@@ -58,12 +57,10 @@ class DSSMNet(object):
             self.neg_vec = self.fc_layer(self.neg_emb_pool, shape=[embedding_size, hidden_size],
                     name="neg-fc", activation_function=tf.nn.tanh)
 
-        with tf.variable_scope("consine", reuse=tf.AUTO_REUSE):
-            self.qp_sim = cosine_similarity(self.query_vec, self.pos_vec)
-            self.qn_sim = cosine_similarity(self.query_vec, self.neg_vec)
-            self.diff_sim = tf.subtract(self.qp_sim, self.qn_sim)
-            # use predict query-query similarity
-            self.qq_sim = cosine_similarity(self.query_vec, self.fake_vec)
+        self.qp_sim = cosine_similarity(self.query_vec, self.pos_vec)
+        self.qn_sim = cosine_similarity(self.query_vec, self.neg_vec)
+        # use predict query-query similarity
+        self.qq_sim = cosine_similarity(self.query_vec, self.fake_vec)
 
         with tf.variable_scope("loss"): 
             self.loss = rank_loss(self.qp_sim, self.qn_sim)
